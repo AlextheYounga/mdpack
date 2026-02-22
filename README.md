@@ -13,12 +13,6 @@ Ships as both a CLI and a reusable Rust library.
 
 ## Install (CLI)
 
-From crates.io (once published):
-
-```sh
-cargo install mdpack
-```
-
 From this repository:
 
 ```sh
