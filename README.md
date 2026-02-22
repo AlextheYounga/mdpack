@@ -33,6 +33,8 @@ Unpack a bundle:
 mdpack unpack bundle.md -o ./my-project
 ```
 
+If `-o` is omitted, files are written to the current directory.
+
 Options:
 
 - `--include-hidden` to include dotfiles during packing.
@@ -71,9 +73,8 @@ unpack_from_path(Path::new("bundle.md"), Some(Path::new("./out")), options)?;
 
 ## Format
 
-Bundles follow the code2prompt layout:
+Bundles follow the code2prompt layout, minus the `Project Path:` line:
 
-- `Project Path: ...`
 - `Source Tree:` section with an ASCII tree
 - Per-file blocks in the form:
 

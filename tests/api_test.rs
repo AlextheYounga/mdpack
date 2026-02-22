@@ -1,4 +1,4 @@
-use mdpack::{PackOptions, UnpackOptions, pack_to_string, unpack_from_str};
+use mdpack::{pack_to_string, unpack_from_str, PackOptions, UnpackOptions};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -23,6 +23,24 @@ fn write_file(path: &Path, content: &str) {
         fs::create_dir_all(parent).expect("create parent");
     }
     fs::write(path, content).expect("write file");
+}
+
+struct CurrentDirGuard {
+    original: PathBuf,
+}
+
+impl CurrentDirGuard {
+    fn new(target: &Path) -> Self {
+        let original = std::env::current_dir().expect("current dir");
+        std::env::set_current_dir(target).expect("set current dir");
+        Self { original }
+    }
+}
+
+impl Drop for CurrentDirGuard {
+    fn drop(&mut self) {
+        let _ = std::env::set_current_dir(&self.original);
+    }
 }
 
 #[test]
@@ -64,16 +82,18 @@ fn unpack_rejects_parent_segments() {
 }
 
 #[test]
-fn unpack_defaults_to_project_dir() {
-    let unique = unique_name("example");
-    let markdown = format!("Project Path: /tmp/{unique}\n\n`foo.txt`:\n\n```\ncontent\n```\n");
+fn unpack_defaults_to_current_dir() {
+    let dir = temp_dir("unpack_current");
+    {
+        let _guard = CurrentDirGuard::new(&dir);
+        let markdown = "`foo.txt`:\n\n```\ncontent\n```\n";
 
-    let output_dir = unpack_from_str(&markdown, None, UnpackOptions::default()).expect("unpack");
-    let name = output_dir.file_name().and_then(|name| name.to_str());
-    assert_eq!(name, Some(unique.as_str()));
+        let output_dir = unpack_from_str(markdown, None, UnpackOptions::default()).expect("unpack");
+        assert_eq!(output_dir, dir);
 
-    let content = fs::read_to_string(output_dir.join("foo.txt")).expect("read content");
-    assert_eq!(content, "content");
+        let content = fs::read_to_string(dir.join("foo.txt")).expect("read content");
+        assert_eq!(content, "content");
+    }
 
-    let _ = fs::remove_dir_all(output_dir);
+    let _ = fs::remove_dir_all(dir);
 }

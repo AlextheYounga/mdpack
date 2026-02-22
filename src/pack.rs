@@ -19,7 +19,6 @@ pub fn pack_to_string(root: &Path, options: PackOptions) -> Result<String> {
     let tree = render_tree(&root_abs, &files);
 
     let mut bundle = String::new();
-    bundle.push_str(&format!("Project Path: {}\n\n", root_abs.display()));
     bundle.push_str("Source Tree:\n\n```txt\n");
     bundle.push_str(&tree);
     if !tree.ends_with('\n') {

@@ -27,9 +27,10 @@ pub fn unpack_from_str(
         return Err("No files found in bundle".into());
     }
 
-    let output_dir = output_dir
-        .map(|path| path.to_path_buf())
-        .unwrap_or_else(|| default_output_dir(markdown));
+    let output_dir = match output_dir {
+        Some(path) => path.to_path_buf(),
+        None => std::env::current_dir()?,
+    };
     if output_dir.as_os_str().is_empty() {
         return Err("Output directory is empty".into());
     }
@@ -159,24 +160,6 @@ fn parse_fence_line(line: &str) -> Option<Fence> {
 fn is_section_line(line: &str) -> bool {
     let trimmed = line.trim();
     trimmed.starts_with("Git Diff:") || trimmed == "Git Diff"
-}
-
-fn default_output_dir(markdown: &str) -> PathBuf {
-    for line in markdown.lines() {
-        if let Some(rest) = line.trim().strip_prefix("Project Path:") {
-            let value = rest.trim();
-            if !value.is_empty() {
-                let path = Path::new(value);
-                if let Some(name) = path.file_name() {
-                    let name = name.to_string_lossy();
-                    if !name.is_empty() {
-                        return PathBuf::from(name.to_string());
-                    }
-                }
-            }
-        }
-    }
-    PathBuf::from("unpacked")
 }
 
 fn sanitize_rel_path(path: &str) -> Result<PathBuf> {
