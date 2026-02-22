@@ -1,7 +1,6 @@
 use clap::{Parser, Subcommand};
-use mdpack::{PackOptions, UnpackOptions, pack_to_path, pack_to_string, unpack_from_path};
-use std::io::{self, Write};
-use std::path::PathBuf;
+use mdpack::{PackOptions, UnpackOptions, pack_to_path, unpack_from_path};
+use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 #[command(
@@ -43,14 +42,9 @@ fn main() -> mdpack::Result<()> {
             include_hidden,
         } => {
             let options = PackOptions { include_hidden };
-            match output {
-                Some(output) => pack_to_path(&path, &output, options)?,
-                None => {
-                    let bundle = pack_to_string(&path, options)?;
-                    let mut stdout = io::stdout();
-                    stdout.write_all(bundle.as_bytes())?;
-                }
-            }
+            let output = output.unwrap_or_else(|| PathBuf::from("bundle.md"));
+            pack_to_path(&path, &output, options)?;
+            println!("Wrote bundle to {}", display_path(&output));
         }
         Commands::Unpack {
             input,
@@ -58,8 +52,19 @@ fn main() -> mdpack::Result<()> {
             force,
         } => {
             let options = UnpackOptions { force };
-            unpack_from_path(&input, output.as_deref(), options)?;
+            let output_dir = unpack_from_path(&input, output.as_deref(), options)?;
+            println!("Unpacked to {}", display_path(&output_dir));
         }
     }
     Ok(())
+}
+
+fn display_path(path: &Path) -> String {
+    if path.is_absolute() {
+        return path.display().to_string();
+    }
+    match std::env::current_dir() {
+        Ok(cwd) => cwd.join(path).display().to_string(),
+        Err(_) => path.display().to_string(),
+    }
 }

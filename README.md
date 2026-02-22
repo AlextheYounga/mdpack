@@ -27,6 +27,8 @@ Pack a directory:
 mdpack pack ./my-project -o bundle.md
 ```
 
+If `-o` is omitted, the bundle is written to `bundle.md` in the current directory.
+
 Unpack a bundle:
 
 ```sh
