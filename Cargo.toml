@@ -3,6 +3,13 @@ name = "mdpack"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "mdpack"
+path = "src/main.rs"
+
 [dependencies]
 clap = { version = "4.5.32", features = ["derive"] }
 walkdir = "2.5.0"
