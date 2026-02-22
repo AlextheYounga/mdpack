@@ -8,7 +8,7 @@ use walkdir::{DirEntry, WalkDir};
 
 #[derive(Parser)]
 #[command(
-    name = "bundlermd",
+    name = "mdpack",
     version,
     about = "Bundle and expand code2prompt-style markdown"
 )]
