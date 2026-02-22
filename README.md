@@ -25,18 +25,6 @@ From this repository:
 cargo install --git https://github.com/AlextheYounga/mdpack.git
 ```
 
-SSH:
-
-```sh
-cargo install --git git@github.com:AlextheYounga/mdpack.git
-```
-
-Local install from a checkout:
-
-```sh
-cargo install --path .
-```
-
 ## CLI usage
 
 Pack a directory:
