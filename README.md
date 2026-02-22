@@ -1,7 +1,8 @@
 # mdpack
 
 Pack codebases into code2prompt-style Markdown bundles and expand them back into
-files. Ships as both a CLI and a reusable Rust library.
+files. Inspired by [code2prompt](https://github.com/mufeedvh/code2prompt).
+Ships as both a CLI and a reusable Rust library.
 
 ## Features
 
