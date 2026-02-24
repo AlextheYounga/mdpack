@@ -2,6 +2,10 @@
 name = "mdpack"
 version = "0.1.0"
 edition = "2024"
+authors=["Alex Younger <thealexyounger@proton.me>"]
+description="Pack codebases into Markdown bundles and expand them back into files."
+license="MIT"
+publish=true
 
 [lib]
 path = "src/lib.rs"
