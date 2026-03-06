@@ -56,6 +56,39 @@ fn pack_to_string_uses_longer_fence() {
 }
 
 #[test]
+fn pack_skips_gitignored_files_by_default() {
+    let dir = temp_dir("pack_gitignore_default");
+    write_file(&dir.join(".gitignore"), "ignored.txt\n");
+    write_file(&dir.join("included.txt"), "keep");
+    write_file(&dir.join("ignored.txt"), "skip");
+
+    let bundle = pack_to_string(&dir, PackOptions::default()).expect("pack");
+    assert!(bundle.contains("`included.txt`"));
+    assert!(!bundle.contains("`ignored.txt`"));
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn pack_includes_gitignored_files_with_ignored_flag() {
+    let dir = temp_dir("pack_gitignore_flag");
+    write_file(&dir.join(".gitignore"), "ignored.txt\n");
+    write_file(&dir.join("ignored.txt"), "keep");
+
+    let bundle = pack_to_string(
+        &dir,
+        PackOptions {
+            include_hidden: false,
+            include_ignored: true,
+        },
+    )
+    .expect("pack");
+    assert!(bundle.contains("`ignored.txt`"));
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
 fn unpack_from_str_handles_inner_fences() {
     let dir = temp_dir("unpack_inner");
     let markdown = "`foo.txt`:\n\n```txt\nline1\n```\nline2\n```\n\n`bar.txt`:\n\n```\nbar\n```\n";

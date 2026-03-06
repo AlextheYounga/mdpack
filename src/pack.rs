@@ -1,12 +1,13 @@
 use crate::Result;
+use ignore::WalkBuilder;
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
-use walkdir::{DirEntry, WalkDir};
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct PackOptions {
     pub include_hidden: bool,
+    pub include_ignored: bool,
 }
 
 pub fn pack_to_string(root: &Path, options: PackOptions) -> Result<String> {
@@ -15,7 +16,7 @@ pub fn pack_to_string(root: &Path, options: PackOptions) -> Result<String> {
     }
 
     let root_abs = fs::canonicalize(root).unwrap_or_else(|_| root.to_path_buf());
-    let files = collect_files(&root_abs, options.include_hidden)?;
+    let files = collect_files(&root_abs, options)?;
     let tree = render_tree(&root_abs, &files);
 
     let mut bundle = String::new();
@@ -65,17 +66,25 @@ pub fn pack_to_path(root: &Path, output: &Path, options: PackOptions) -> Result<
     Ok(())
 }
 
-fn collect_files(root: &Path, include_hidden: bool) -> Result<Vec<PathBuf>> {
+fn collect_files(root: &Path, options: PackOptions) -> Result<Vec<PathBuf>> {
     let mut files = Vec::new();
-    let walker = WalkDir::new(root)
+    let mut walker = WalkBuilder::new(root);
+    walker
         .follow_links(false)
-        .into_iter()
-        .filter_entry(|entry| !should_skip_entry(entry, include_hidden));
+        .hidden(!options.include_hidden)
+        .git_ignore(!options.include_ignored)
+        .git_exclude(!options.include_ignored)
+        .git_global(!options.include_ignored)
+        .require_git(false);
 
-    for entry in walker {
+    for entry in walker.build() {
         let entry = entry?;
-        if entry.file_type().is_file() {
-            files.push(entry.path().to_path_buf());
+        let path = entry.path();
+        if should_skip_path(path, root) {
+            continue;
+        }
+        if path.is_file() {
+            files.push(path.to_path_buf());
         }
     }
 
@@ -88,18 +97,13 @@ fn collect_files(root: &Path, include_hidden: bool) -> Result<Vec<PathBuf>> {
     Ok(files)
 }
 
-fn should_skip_entry(entry: &DirEntry, include_hidden: bool) -> bool {
-    if entry.depth() == 0 {
+fn should_skip_path(path: &Path, root: &Path) -> bool {
+    let Ok(rel) = path.strip_prefix(root) else {
         return false;
-    }
-    let name = entry.file_name().to_string_lossy();
-    if name == ".git" {
-        return true;
-    }
-    if !include_hidden && name.starts_with('.') {
-        return true;
-    }
-    false
+    };
+
+    rel.components()
+        .any(|component| matches!(component, Component::Normal(name) if name == ".git"))
 }
 
 fn render_tree(root: &Path, files: &[PathBuf]) -> String {

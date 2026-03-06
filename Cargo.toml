@@ -1,10 +1,11 @@
 [package]
 name = "mdpack"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 authors=["Alex Younger <thealexyounger@proton.me>"]
 description="Pack codebases into Markdown bundles and expand them back into files."
 license="MIT"
+repository="https://github.com/AlextheYounga/mdpack"
 publish=true
 
 [lib]
@@ -16,4 +17,4 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.5.32", features = ["derive"] }
-walkdir = "2.5.0"
+ignore = "0.4.23"
