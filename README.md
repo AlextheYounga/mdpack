@@ -46,6 +46,7 @@ If `-o` is omitted, files are written to the current directory.
 Options:
 
 - `--include-hidden` to include dotfiles during packing.
+- `--ignored` to include files matched by gitignore rules during packing.
 - `--force` to overwrite existing files during unpacking.
 
 ## Library usage
@@ -63,7 +64,10 @@ Pack to a string or file:
 use mdpack::{pack_to_path, pack_to_string, PackOptions};
 use std::path::Path;
 
-let options = PackOptions { include_hidden: false };
+let options = PackOptions {
+    include_hidden: false,
+    include_ignored: false,
+};
 let bundle = pack_to_string(Path::new("./my-project"), options)?;
 pack_to_path(Path::new("./my-project"), Path::new("bundle.md"), options)?;
 ```

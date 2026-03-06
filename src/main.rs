@@ -22,6 +22,8 @@ enum Commands {
         output: Option<PathBuf>,
         #[arg(long)]
         include_hidden: bool,
+        #[arg(long)]
+        ignored: bool,
     },
     Unpack {
         #[arg(value_name = "FILE")]
@@ -40,8 +42,12 @@ fn main() -> mdpack::Result<()> {
             path,
             output,
             include_hidden,
+            ignored,
         } => {
-            let options = PackOptions { include_hidden };
+            let options = PackOptions {
+                include_hidden,
+                include_ignored: ignored,
+            };
             let output = output.unwrap_or_else(|| PathBuf::from("bundle.md"));
             pack_to_path(&path, &output, options)?;
             println!("Wrote bundle to {}", display_path(&output));
