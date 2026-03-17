@@ -1,6 +1,6 @@
 [package]
 name = "mdpack"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 authors=["Alex Younger <thealexyounger@proton.me>"]
 description="Pack codebases into Markdown bundles and expand them back into files."
