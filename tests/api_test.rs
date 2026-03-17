@@ -1,4 +1,4 @@
-use mdpack::{PackOptions, UnpackOptions, pack_to_string, unpack_from_str};
+use mdpack::{pack_to_string, unpack_from_str, PackOptions, UnpackOptions};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -84,6 +84,41 @@ fn pack_includes_gitignored_files_with_ignored_flag() {
     )
     .expect("pack");
     assert!(bundle.contains("`ignored.txt`"));
+
+    let _ = fs::remove_dir_all(dir);
+}
+
+#[test]
+fn pack_does_not_apply_parent_gitignore() {
+    let parent = temp_dir("pack_parent_gitignore");
+    write_file(&parent.join(".gitignore"), "*.rs\n");
+
+    let root = parent.join("tmux");
+    fs::create_dir_all(&root).expect("create root");
+    write_file(&root.join("interface.rs"), "pub struct Interface;\n");
+    write_file(&root.join("mod.rs"), "mod interface;\nmod session;\n");
+    write_file(&root.join("session.rs"), "pub struct Session;\n");
+
+    let bundle = pack_to_string(&root, PackOptions::default()).expect("pack");
+    assert!(bundle.contains("`interface.rs`"));
+    assert!(bundle.contains("`mod.rs`"));
+    assert!(bundle.contains("`session.rs`"));
+
+    let _ = fs::remove_dir_all(parent);
+}
+
+#[test]
+fn pack_respects_nested_gitignore() {
+    let dir = temp_dir("pack_nested_gitignore");
+    write_file(&dir.join("root.rs"), "pub fn root() {}\n");
+    write_file(&dir.join("nested/.gitignore"), "ignored.rs\n");
+    write_file(&dir.join("nested/ignored.rs"), "pub fn ignored() {}\n");
+    write_file(&dir.join("nested/kept.rs"), "pub fn kept() {}\n");
+
+    let bundle = pack_to_string(&dir, PackOptions::default()).expect("pack");
+    assert!(bundle.contains("`root.rs`"));
+    assert!(bundle.contains("`nested/kept.rs`"));
+    assert!(!bundle.contains("`nested/ignored.rs`"));
 
     let _ = fs::remove_dir_all(dir);
 }

@@ -72,9 +72,10 @@ fn collect_files(root: &Path, options: PackOptions) -> Result<Vec<PathBuf>> {
     walker
         .follow_links(false)
         .hidden(!options.include_hidden)
+        .parents(false)
         .git_ignore(!options.include_ignored)
-        .git_exclude(!options.include_ignored)
-        .git_global(!options.include_ignored)
+        .git_exclude(false)
+        .git_global(false)
         .require_git(false);
 
     for entry in walker.build() {
