@@ -131,9 +131,7 @@ fn file_header_at(lines: &[String], idx: usize) -> Option<String> {
     if lookahead >= lines.len() {
         return None;
     }
-    if parse_fence_line(&lines[lookahead]).is_none() {
-        return None;
-    }
+    parse_fence_line(&lines[lookahead])?;
 
     Some(path.to_string())
 }

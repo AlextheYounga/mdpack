@@ -1,4 +1,4 @@
-use mdpack::{pack_to_string, unpack_from_str, PackOptions, UnpackOptions};
+use mdpack::{PackOptions, UnpackOptions, pack_to_string, unpack_from_str};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
